@@ -38,9 +38,11 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:12.1-alpine
+    image: postgres:14-alpine
     container_name: pleroma_db
     restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pleroma"]
     environment:
       POSTGRES_USER: pleroma
       POSTGRES_PASSWORD: ChangeMe!
@@ -51,6 +53,12 @@ services:
   web:
     image: pleroma
     container_name: pleroma_web
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider --proxy=off localhost:4000 || exit 1",
+        ]
     restart: always
     ports:
       - '4000:4000'
@@ -59,9 +67,9 @@ services:
       # Feel free to remove or override this section
       # See 'Build-time variables' in README.md
       args:
-        - "UID=911"
-        - "GID=911"
-        - "PLEROMA_VER=develop"
+        - "UID=1000"
+        - "GID=1000"
+        - "PLEROMA_VER=v2.4.2"
     volumes:
       - ./uploads:/var/lib/pleroma/uploads
       - ./static:/var/lib/pleroma/static
